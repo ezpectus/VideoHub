@@ -243,67 +243,82 @@ Repository работает с **базой данных**.
 - изолирует работу с БД
 
 ---
-
 # 4. Repository Structure
 ```
-video-streaming-platform
+videohub
 │
 ├── backend
-│
-│ ├── src
-│ │
-│ │ ├── controllers
-│ │ │
-│ │ │ auth.controller.ts
-│ │ │ video.controller.ts
-│ │ │ comment.controller.ts
-│ │ │
-│ │ ├── services
-│ │ │
-│ │ │ auth.service.ts
-│ │ │ video.service.ts
-│ │ │ comment.service.ts
-│ │ │
-│ │ ├── repositories
-│ │ │
-│ │ │ user.repository.ts
-│ │ │ video.repository.ts
-│ │ │ comment.repository.ts
-│ │ │
-│ │ ├── routes
-│ │ │
-│ │ │ auth.routes.ts
-│ │ │ video.routes.ts
-│ │ │ comment.routes.ts
-│ │ │
-│ │ ├── middleware
-│ │ │
-│ │ │ auth.middleware.ts
-│ │ │
-│ │ ├── config
-│ │ │
-│ │ │ prisma.ts
-│ │ │ env.ts
-│ │ │
-│ │ ├── utils
-│ │ │
-│ │ │ jwt.ts
-│ │ │
-│ │ ├── app.ts
-│ │ └── server.ts
-│ │
-│ ├── prisma
-│ │
-│ │ schema.prisma
-│ │
-│ └── uploads
-│ videos
+│   │
+│   ├── src
+│   │   ├── controllers
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── video.controller.ts
+│   │   │   └── comment.controller.ts
+│   │   │
+│   │   ├── services
+│   │   │   ├── auth.service.ts
+│   │   │   ├── video.service.ts
+│   │   │   └── comment.service.ts
+│   │   │
+│   │   ├── repositories
+│   │   │   ├── user.repository.ts
+│   │   │   ├── video.repository.ts
+│   │   │   └── comment.repository.ts
+│   │   │
+│   │   ├── routes
+│   │   │   ├── auth.routes.ts
+│   │   │   ├── video.routes.ts
+│   │   │   └── comment.routes.ts
+│   │   │
+│   │   ├── middleware
+│   │   │   └── auth.middleware.ts
+│   │   │
+│   │   ├── config
+│   │   │   ├── prisma.ts
+│   │   │   └── env.ts
+│   │   │
+│   │   ├── utils
+│   │   │   └── jwt.ts
+│   │   │
+│   │   ├── app.ts
+│   │   └── server.ts
+│   │
+│   ├── prisma
+│   │   └── schema.prisma
+│   │
+│   └── uploads
+│       └── videos
 │
 ├── frontend
+│   │
+│   ├── src
+│   │   ├── pages
+│   │   │   ├── index.tsx
+│   │   │   ├── login.tsx
+│   │   │   ├── register.tsx
+│   │   │   ├── upload.tsx
+│   │   │   └── video
+│   │   │       └── [id].tsx
+│   │   │
+│   │   ├── components
+│   │   │   ├── VideoPlayer.tsx
+│   │   │   ├── VideoCard.tsx
+│   │   │   ├── CommentList.tsx
+│   │   │   └── CommentForm.tsx
+│   │   │
+│   │   ├── services
+│   │   │   └── apiClient.ts
+│   │   │
+│   │   ├── hooks
+│   │   │   └── useAuth.ts
+│   │   │
+│   │   └── styles
+│   │
+│   ├── package.json
+│   └── tsconfig.json
 │
 └── docs
 ```
-
 
 ---
 
