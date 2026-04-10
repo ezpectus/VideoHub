@@ -25,9 +25,7 @@
   flex-shrink: 0;
 }
 
-.body {
-  flex: 1;
-}
+.body { flex: 1; }
 
 .header {
   display: flex;
