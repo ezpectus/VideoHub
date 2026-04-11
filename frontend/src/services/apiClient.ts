@@ -61,6 +61,9 @@ export const authApi = {
 
   login: (email: string, password: string) =>
     api.post<AuthResponse>('/auth/login', { email, password }),
+
+  googleLogin: (credential: string) =>
+    api.post<AuthResponse>('/auth/google', { credential }),
 };
 
 // ─── Video API ──────────────────────────────────────────────────────────────

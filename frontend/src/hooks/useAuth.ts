@@ -49,11 +49,19 @@ export function useAuth() {
     return data;
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const { data } = await authApi.googleLogin(credential);
+    localStorage.setItem('vh_token', data.token);
+    localStorage.setItem('vh_user', JSON.stringify(data.user));
+    setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
+    return data;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('vh_token');
     localStorage.removeItem('vh_user');
     setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
   }, []);
 
-  return { ...state, login, register, logout };
+  return { ...state, login, register, loginWithGoogle, logout };
 }

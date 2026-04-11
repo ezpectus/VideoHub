@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './login.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,20 @@ export default function LoginPage() {
       router.push('/');
     } catch {
       setError('Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (!response.credential) return;
+    setLoading(true);
+    setError('');
+    try {
+      await loginWithGoogle(response.credential);
+      router.push('/');
+    } catch {
+      setError('Google sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -44,6 +59,23 @@ export default function LoginPage() {
         <p className={styles.subtitle}>to continue to VideoHub</p>
 
         {error && <p className="error-msg">{error}</p>}
+
+        {/* Google Sign-In */}
+        <div className={styles.googleWrapper}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google sign-in failed. Please try again.')}
+            theme="filled_black"
+            shape="pill"
+            size="large"
+            width="328"
+            text="signin_with"
+          />
+        </div>
+
+        <div className={styles.divider}>
+          <span>or sign in with email</span>
+        </div>
 
         <form id="login-form" className={styles.form} onSubmit={handleSubmit}>
           <div className="form-group">

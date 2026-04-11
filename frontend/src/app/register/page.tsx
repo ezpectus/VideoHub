@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './register.module.css';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +30,20 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (!response.credential) return;
+    setLoading(true);
+    setError('');
+    try {
+      await loginWithGoogle(response.credential);
+      router.push('/');
+    } catch {
+      setError('Google sign-up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -44,6 +59,23 @@ export default function RegisterPage() {
         <p className={styles.subtitle}>Join VideoHub today</p>
 
         {error && <p className="error-msg">{error}</p>}
+
+        {/* Google Sign-Up */}
+        <div className={styles.googleWrapper}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google sign-up failed. Please try again.')}
+            theme="filled_black"
+            shape="pill"
+            size="large"
+            width="328"
+            text="signup_with"
+          />
+        </div>
+
+        <div className={styles.divider}>
+          <span>or register with email</span>
+        </div>
 
         <form id="register-form" className={styles.form} onSubmit={handleSubmit}>
           <div className="form-group">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import GoogleAuthProvider from '@/components/GoogleAuthProvider';
 
 export const metadata: Metadata = {
   title: 'VideoHub — Watch, Upload, Share',
@@ -16,10 +17,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        <Navbar />
-        <main className="page-content">
-          {children}
-        </main>
+        <GoogleAuthProvider>
+          <Navbar />
+          <main className="page-content">
+            {children}
+          </main>
+        </GoogleAuthProvider>
       </body>
     </html>
   );

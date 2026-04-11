@@ -41,6 +41,27 @@
   margin-top: -8px;
 }
 
+.googleWrapper {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
 .form {
   display: flex;
   flex-direction: column;
