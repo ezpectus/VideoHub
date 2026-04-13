@@ -3,10 +3,8 @@
 
 import { Request, Response } from 'express'
 import { videoService } from '../services/video.service'
+import { AuthRequest } from '../middleware/auth.middleware'
 
-interface AuthRequest extends Request {
-  userId?: string
-}
 
 export const videoController = {
     async upload(req: AuthRequest, res: Response) { 

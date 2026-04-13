@@ -3,10 +3,7 @@
 
 import { Request, Response } from 'express'
 import { commentService } from '../services/comment.service'
-
-interface AuthRequest extends Request {
-    userId?: string
-  }
+import { AuthRequest } from '../middleware/auth.middleware'
 
 
 export const commentController = {
