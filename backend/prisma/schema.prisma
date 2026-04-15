@@ -10,30 +10,32 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
+  id        String    @id @default(uuid())
+  email     String    @unique
+  username  String    @unique
+  password  String?   // nullable для Google OAuth
+  googleId  String?   @unique
   avatar    String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   videos    Video[]
   comments  Comment[]
   likes     Like[]
 }
 
 model Video {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String?
   url         String
   thumbnail   String?
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id])
   comments    Comment[]
   likes       Like[]
 }
