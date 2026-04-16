@@ -16,3 +16,11 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
+const upload = multer({ storage: storage });
+
+router.get('/', videoController.getAll);
+router.get('/:id', videoController.getById);
+
+router.post('/upload', authMiddleware, upload.single('file'), videoController.upload);
+
+export default router;
