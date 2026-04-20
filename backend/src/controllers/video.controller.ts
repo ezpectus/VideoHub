@@ -12,7 +12,11 @@ export const videoController = {
         const file = req.file
         const userId = req.userId
         if (!file) return res.status(400).json({ message: 'No file' })
-        const result = await videoService.upload(file, userId)
+        const result = await videoService.uploadVideo(
+          file.originalname,
+          file.path,
+          userId!
+        );
         return res.status(201).json(result)
        
          } catch(error) {
@@ -21,21 +25,27 @@ export const videoController = {
      },
     async getAll(req: Request, res: Response) { 
         try {
-            const result = await videoService.getAll()
+          const result = await videoService.getVideos();
             return res.json(result)
        
         } catch(error) {
           return res.status(500).json({ message: "Server error" });
        }
      },
-    async getOne(req: Request, res: Response) { 
-        try {
-            const id = req.params.id
-            const result = await videoService.getOne(id)
-            return res.json(result)
+     async getOne(req: Request, res: Response) {
 
-        } catch(error) {
-          return res.status(500).json({ message: "Server error" });
-       }
-     },
+      try {
+    
+        const id = req.params.id as string;
+    
+        const result =
+          await videoService.getVideoById(id);
+    
+        return res.json(result);
+    
+      } catch (error) {
+        return res.status(500).json({ message: "Server error" });
+      }
+    
+    },
   }

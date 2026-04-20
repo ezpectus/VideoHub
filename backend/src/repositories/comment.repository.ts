@@ -1,23 +1,55 @@
 import { prisma } from "../config/prisma";
+
 export const commentRepository = {
+
   createComment: async (data: {
     content: string;
-    userId: number;
-    videoId: number;
+    userId: string;
+    videoId: string;
   }) => {
+
     return prisma.comment.create({
-      data,
+      data: {
+
+        text: data.content,
+
+        user: {
+          connect: {
+            id: data.userId
+          }
+        },
+
+        video: {
+          connect: {
+            id: data.videoId
+          }
+        }
+
+      }
     });
+
   },
-  getCommentsByVideoId: async (videoId: number) => {
+
+  getCommentsByVideoId: async (
+    videoId: string
+  ) => {
+
     return prisma.comment.findMany({
-      where: { videoId },
+
+      where: {
+        videoId
+      },
+
       include: {
-        user: true,
+        user: true
       },
+
       orderBy: {
-        createdAt: "desc",
-      },
+        createdAt: "desc"
+      }
+
     });
+
   },
+
 };

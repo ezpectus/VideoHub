@@ -1,11 +1,13 @@
 import { commentRepository } from "../repositories/comment.repository";
 
 export const commentService = {
+
   addComment: async (
     content: string,
-    userId: number,
-    videoId: number
+    userId: string,
+    videoId: string
   ) => {
+
     if (!content) {
       throw new Error("Comment cannot be empty");
     }
@@ -15,9 +17,17 @@ export const commentService = {
       userId,
       videoId,
     });
+
   },
 
-  getCommentsByVideo: async (videoId: number) => {
-    return commentRepository.getCommentsByVideoId(videoId);
+  getCommentsByVideo: async (
+    videoId: string
+  ) => {
+
+    return commentRepository.getCommentsByVideoId(
+      videoId
+    );
+
   },
+
 };
