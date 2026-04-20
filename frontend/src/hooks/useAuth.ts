@@ -19,18 +19,24 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('vh_token');
-    const userRaw = localStorage.getItem('vh_user');
-    if (token && userRaw) {
-      try {
-        const user: User = JSON.parse(userRaw);
-        setState({ user, token, isLoading: false, isAuthenticated: true });
-      } catch {
+    const checkAuth = () => {
+      const token = localStorage.getItem('vh_token');
+      const userRaw = localStorage.getItem('vh_user');
+      if (token && userRaw) {
+        try {
+          const user: User = JSON.parse(userRaw);
+          setState({ user, token, isLoading: false, isAuthenticated: true });
+        } catch {
+          setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+        }
+      } else {
         setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
       }
-    } else {
-      setState((prev) => ({ ...prev, isLoading: false }));
-    }
+    };
+
+    checkAuth();
+    window.addEventListener('auth_changed', checkAuth);
+    return () => window.removeEventListener('auth_changed', checkAuth);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -47,6 +53,7 @@ export function useAuth() {
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
+    window.dispatchEvent(new Event('auth_changed'));
     return data;
   }, []);
 
@@ -64,6 +71,7 @@ export function useAuth() {
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
+    window.dispatchEvent(new Event('auth_changed'));
     return data;
   }, []);
 
@@ -81,6 +89,7 @@ export function useAuth() {
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
+    window.dispatchEvent(new Event('auth_changed'));
     return data;
   }, []);
 
@@ -88,6 +97,7 @@ export function useAuth() {
     localStorage.removeItem('vh_token');
     localStorage.removeItem('vh_user');
     setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    window.dispatchEvent(new Event('auth_changed'));
   }, []);
 
   return { ...state, login, register, loginWithGoogle, logout };
