@@ -38,11 +38,15 @@ export default function VideoPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [videoLoading, setVideoLoading] = useState(true);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
   const fetchVideo = async () => {
     try {
       const { data } = await videoApi.getById(id);
       setVideo(data);
+      setLikes(data.likesCount || 0);
+      setIsLiked(data.isLiked || false);
     } catch {
       setVideo(MOCK_VIDEO);
     } finally {
@@ -59,6 +63,25 @@ export default function VideoPage() {
     }
   };
 
+  // instant display of likes 
+  const handleLike = async () => {
+    const newIsLiked = !isLiked;
+    const newLikesCount = newIsLiked ? likes + 1 : likes - 1;
+    
+    setIsLiked(newIsLiked);
+    setLikes(newLikesCount);
+
+    try {
+      // silently sends data to the server
+      await videoApi.toggleLike(id);
+    } catch (error) {
+      console.error("Ошибка при лайке:", error);
+      //in case of error
+      setIsLiked(!newIsLiked);
+      setLikes(likes);
+    }
+  };
+  
   useEffect(() => {
     fetchVideo();
     fetchComments();
@@ -114,12 +137,36 @@ export default function VideoPage() {
                   <p className={styles.channelName}>{video.user.username}</p>
                 </div>
               </div>
-              <div className={styles.stats}>
-                <span>{formatViews(video.views)} views</span>
-                <span className={styles.dot}>·</span>
-                <span>{formatDate(video.createdAt)}</span>
-              </div>
-            </div>
+              
+             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+  <div className={styles.stats}>
+    <span>{formatViews(video.views)} views</span>
+    <span className={styles.dot}>·</span>
+    <span>{formatDate(video.createdAt)}</span>
+  </div>
+
+  <button 
+    onClick={handleLike}
+    style={{
+      display: 'flex', alignItems: 'center', gap: '8px',
+      padding: '8px 16px', borderRadius: '20px',
+      border: '1px solid #ccc',
+      backgroundColor: isLiked ? '#e5e5e5' : '#f2f2f2',
+      cursor: 'pointer', fontWeight: 'bold', fontSize: '14px',
+    }}
+  >
+    <svg 
+      width="20" height="20" viewBox="0 0 24 24" 
+      fill={isLiked ? "currentColor" : "none"} 
+      stroke="currentColor" strokeWidth="2" 
+      strokeLinecap="round" strokeLinejoin="round"
+    >
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+    </svg>
+    {formatViews(likes)}
+  </button>
+</div>
+     </div>
 
             {video.description && (
               <div className={`${styles.description} ${descExpanded ? styles.expanded : ''}`}>
