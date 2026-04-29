@@ -85,6 +85,16 @@ export const videoApi = {
     api.post<{ likesCount: number; isLiked: boolean }>(`/videos/${id}/like`),
 };
 
+getByUserId: (userId: string) =>
+    api.get<Video[]>(`/videos?userId=${userId}`),
+};
+
+// ─── User API ──────────────────────────────────────────────────────────────
+
+export const userApi = {
+  getById: (id: string) =>
+    api.get<Pick<User, 'id' | 'username' | 'avatarUrl' | 'createdAt'>>(`/users/${id}`),
+};
 // ─── Comment API ─────────────────────────────────────────────────────────────
 
 export const commentApi = {
