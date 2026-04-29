@@ -19,6 +19,8 @@ export interface Video {
   views: number;
   createdAt: string;
   user: Pick<User, 'id' | 'username' | 'avatarUrl'>;
+  likesCount?: number; 
+  isLiked?: boolean;
 }
 
 export interface Comment {
@@ -79,6 +81,8 @@ export const videoApi = {
     api.post<Video>('/videos/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  toggleLike: (id: string) =>
+    api.post<{ likesCount: number; isLiked: boolean }>(`/videos/${id}/like`),
 };
 
 // ─── Comment API ─────────────────────────────────────────────────────────────
