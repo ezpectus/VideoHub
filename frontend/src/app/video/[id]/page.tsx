@@ -62,6 +62,30 @@ export default function VideoPage() {
   useEffect(() => {
     fetchVideo();
     fetchComments();
+    if (id) {
+      try {
+        // Reading browser memory
+        const storedHistory = localStorage.getItem('watchHistory');
+        let historyArray: string[] = storedHistory ? JSON.parse(storedHistory) : [];
+
+        // removing duplicaties
+        historyArray = historyArray.filter(videoId => videoId !== id);
+        
+        // add to the beginning of the list
+        historyArray.unshift(id);
+
+        // the history limit 50
+        if (historyArray.length > 50) {
+          historyArray.pop();
+        }
+
+        // save to browser memory
+        localStorage.setItem('watchHistory', JSON.stringify(historyArray));
+      } catch (error) {
+        console.error("Ошибка при сохранении истории просмотров:", error);
+      }
+    }
+
   }, [id]);
 
   if (videoLoading) {
