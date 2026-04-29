@@ -48,9 +48,12 @@ export default function UploadPage() {
     setProgress(0);
 
     const formData = new FormData();
-    formData.append('video', file);
+    formData.append('file', file);
     formData.append('title', title.trim());
     formData.append('description', description.trim());
+    if (thumbnail) {
+      formData.append('thumbnail', thumbnail);
+    }
 
     try {
       // Simulate progress since Axios upload progress needs XMLHttpRequest
