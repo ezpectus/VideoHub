@@ -77,25 +77,26 @@ export const videoApi = {
   getById: (id: string) =>
     api.get<Video>(`/videos/${id}`),
 
+  getByUserId: (userId: string) =>
+    api.get<Video[]>(`/videos?userId=${userId}`),
+
+  getMyVideos: () =>
+    api.get<Video[]>('/videos/my'),
+
   upload: (formData: FormData) =>
     api.post<Video>('/videos/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+
   toggleLike: (id: string) =>
     api.post<{ likesCount: number; isLiked: boolean }>(`/videos/${id}/like`),
-};
-
-getByUserId: (userId: string) =>
-    api.get<Video[]>(`/videos?userId=${userId}`),
-};
-getMyVideos: () => 
-    api.get<Video[]>('/videos/my'),
 
   update: (id: string, data: { title?: string; description?: string }) =>
     api.patch<Video>(`/videos/${id}`, data),
 
   delete: (id: string) =>
     api.delete(`/videos/${id}`),
+};
 
 // ─── User API ──────────────────────────────────────────────────────────────
 
