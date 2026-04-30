@@ -66,5 +66,55 @@ export const videoController = {
       console.error(error);
       return res.status(500).json({ message: "Server error" });
     }
+  },
+
+
+  // Dashboard - get my videos
+async getMyVideos(req: AuthRequest, res: Response) {
+  try {
+    const userId = req.userId!;
+    const videos = await videoService.getMyVideos(userId);
+    return res.json(videos);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+},
+
+// Dashboard — edit video
+async update(req: AuthRequest, res: Response) {
+  try {
+    const videoId = req.params.id as string;
+    const userId = req.userId!;
+    const { title, description } = req.body;
+
+    const updatedVideo = await videoService.updateVideo(videoId, userId, { title, description });
+    return res.json(updatedVideo);
+  } catch (error: any) {
+    if (error.message === 'Forbidden') {
+      return res.status(403).json({ message: "You don't have permission" });
+    }
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+},
+
+// Dashboard - delete video
+async delete(req: AuthRequest, res: Response) {
+  try {
+    const videoId = req.params.id as string;
+    const userId = req.userId!;
+
+    await videoService.deleteVideo(videoId, userId);
+    return res.json({ message: "Video deleted successfully" });
+  } catch (error: any) {
+    if (error.message === 'Forbidden') {
+      return res.status(403).json({ message: "You don't have permission" });
+    }
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+    }
   }
 };
+
+

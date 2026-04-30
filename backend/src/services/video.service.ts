@@ -121,4 +121,44 @@ export const videoService = {
       return { message: "Like added", isLiked: true };
     }
   },
+
+ // Dashboard — get the video of the current author only
+getMyVideos: async (userId: string) => {
+  return await prisma.video.findMany({
+    where: { authorId: userId },
+    orderBy: { createdAt: 'desc' }
+  });
+},
+
+// Dashboard — update the video with a permission check
+updateVideo: async (videoId: string, userId: string, data: { title?: string, description?: string }) => {
+  const video = await prisma.video.findUnique({ where: { id: videoId } });
+  if (!video) throw new Error("Video not found");
+
+  if (video.authorId !== userId) {
+    throw new Error("Forbidden");
+  }
+
+  return await prisma.video.update({
+    where: { id: videoId },
+    data: {
+      title: data.title !== undefined ? data.title : video.title,
+      description: data.description !== undefined ? data.description : video.description
+    }
+  });
+},
+
+// Dashboard — remove video with permission verification
+deleteVideo: async (videoId: string, userId: string) => {
+  const video = await prisma.video.findUnique({ where: { id: videoId } });
+  if (!video) throw new Error("Video not found");
+
+  if (video.authorId !== userId) {
+    throw new Error("Forbidden");
+  }
+
+  return await prisma.video.delete({
+    where: { id: videoId }
+    });
+  },
 };
