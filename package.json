@@ -1,0 +1,8 @@
+{
+  "name": "videohub",
+  "version": "1.0.0",
+  "description": "VideoHub project",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev"
+  }
+}
