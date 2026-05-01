@@ -1,4 +1,4 @@
-// script for auth via Email and password
+// script for auth via Email and Google OAuth
 // Author Jutsu78 (Oleksii) 
 
 import { Router } from 'express';

@@ -23,6 +23,8 @@ model User {
   videos    Video[]
   comments  Comment[]
   likes     Like[]
+  subscribers   Subscription[] @relation("ChannelSubscribers") // users subscribed to this channel
+  subscriptions Subscription[] @relation("UserSubscriptions")  // channels this user is subscribed to
 }
 
 model Video {
@@ -57,4 +59,19 @@ model Like {
   video   Video  @relation(fields: [videoId], references: [id])
 
   @@unique([userId, videoId])
+}
+
+model Subscription {
+  id           String   @id @default(uuid())
+  subscriberId String
+  channelId    String
+  createdAt    DateTime @default(now())
+
+
+// relations
+  subscriber   User     @relation("UserSubscriptions", fields: [subscriberId], references: [id])
+  channel      User     @relation("ChannelSubscribers", fields: [channelId], references: [id])
+
+
+  @@unique([subscriberId, channelId])
 }
