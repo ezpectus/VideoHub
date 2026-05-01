@@ -10,15 +10,49 @@ export const videoController = {
     try {
       const file = req.file;
       const userId = req.userId;
+      const title = (req.body.title as string) || file?.originalname;
+      const description = req.body.description as string | undefined;
+
       if (!file) return res.status(400).json({ message: 'No file' });
       
       const result = await videoService.uploadVideo(
-        file.originalname,
+        title,
         file.path,
-        userId!
+        userId!,
+        description
       );
       return res.status(201).json(result);
     } catch(error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  },
+
+  async uploadByUrl(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      const { title, url, description } = req.body as {
+        title?: string;
+        url?: string;
+        description?: string;
+      };
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!title?.trim() || !url?.trim()) {
+        return res.status(400).json({ message: "Title and URL are required" });
+      }
+
+      const result = await videoService.createVideoFromUrl(
+        title.trim(),
+        url.trim(),
+        userId,
+        description?.trim() || undefined
+      );
+
+      return res.status(201).json(result);
+    } catch (error) {
       return res.status(500).json({ message: "Server error" });
     }
   },

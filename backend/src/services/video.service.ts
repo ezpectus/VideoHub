@@ -1,20 +1,44 @@
 // Author: Denys(Ezpectus) + Oleksandr-C-S
 import { videoRepository } from "../repositories/video.repository";
 import { prisma } from "../config/prisma";
+import path from "path";
 
 export const videoService = {
   uploadVideo: async (
     title: string,
     filePath: string,
-    userId: string
+    userId: string,
+    description?: string
   ) => {
     if (!title || !filePath) {
       throw new Error("Missing video data");
     }
 
+    const fileName = path.basename(filePath);
+    const publicUrl = `/uploads/videos/${fileName}`;
+
     return videoRepository.createVideo({
       title,
-      url: filePath,
+      url: publicUrl,
+      description,
+      authorId: userId,
+    });
+  },
+
+  createVideoFromUrl: async (
+    title: string,
+    url: string,
+    userId: string,
+    description?: string
+  ) => {
+    if (!title || !url) {
+      throw new Error("Missing video data");
+    }
+
+    return videoRepository.createVideo({
+      title,
+      url,
+      description,
       authorId: userId,
     });
   },

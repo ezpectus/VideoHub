@@ -88,6 +88,9 @@ export const videoApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
+  uploadByUrl: (data: { title: string; url: string; description?: string }) =>
+    api.post<Video>('/videos/upload-by-url', data),
+
   toggleLike: (id: string) =>
     api.post<{ likesCount: number; isLiked: boolean }>(`/videos/${id}/like`),
 

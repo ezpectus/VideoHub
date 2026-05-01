@@ -21,6 +21,7 @@ router.get('/', videoController.getAll);
 router.get('/my', authMiddleware, videoController.getMyVideos); //Dashboard
 router.get('/:id', videoController.getOne);
 router.post('/upload', authMiddleware, upload.single('file'), videoController.upload);
+router.post('/upload-by-url', authMiddleware, videoController.uploadByUrl);
 router.post('/:id/like', authMiddleware, videoController.toggleLike);
 
 //Dashboard - editing and deletion
