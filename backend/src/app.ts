@@ -8,6 +8,7 @@ import commentRoutes from './routes/comment.routes';
 import uploadRoutes from './routes/upload.routes';
 import passport from './config/passport';
 import userRoutes from './routes/user.routes';
+import subscriptionRoutes from './routes/subscription.routes';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api', commentRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/users', userRoutes); 
+app.use('/api/users', userRoutes);
+app.use('/api/subscriptions', subscriptionRoutes); 
 
 export default app;
