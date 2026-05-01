@@ -36,7 +36,9 @@ export function useAuth() {
 
     checkAuth();
     window.addEventListener('auth_changed', checkAuth);
-    return () => window.removeEventListener('auth_changed', checkAuth);
+    return () => {
+      window.removeEventListener('auth_changed', checkAuth);
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
