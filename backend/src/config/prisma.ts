@@ -3,11 +3,13 @@
 
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { ENV } from "./env";
 
-const adapter = new PrismaPg({
+const pool = new Pool({
   connectionString: ENV.DATABASE_URL,
 });
+const adapter = new PrismaPg(pool);
 
 declare global {
   var prisma: PrismaClient | undefined;

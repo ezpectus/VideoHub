@@ -7,12 +7,14 @@ export const videoRepository = {
     url: string;
     authorId: string;
     description?: string;
+    thumbnail?: string;
   }) => {
     return prisma.video.create({
       data: {
         title: data.title,
         url: data.url,
         description: data.description,
+        thumbnail: data.thumbnail,
         author: {
           connect: {
             id: data.authorId,

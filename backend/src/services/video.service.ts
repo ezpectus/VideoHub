@@ -4,6 +4,32 @@ import { prisma } from "../config/prisma";
 import path from "path";
 
 export const videoService = {
+  /**
+   * Extract a YouTube video ID from various URL formats
+   */
+  extractYouTubeId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const re of patterns) {
+      const match = url.match(re);
+      if (match) return match[1];
+    }
+    return null;
+  },
+
+  /**
+   * Build a thumbnail URL — YouTube auto-thumbnail or null for local files
+   */
+  getThumbnailUrl(videoUrl: string): string | undefined {
+    const ytId = videoService.extractYouTubeId(videoUrl);
+    if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    return undefined;
+  },
+
   uploadVideo: async (
     title: string,
     filePath: string,
@@ -35,11 +61,14 @@ export const videoService = {
       throw new Error("Missing video data");
     }
 
+    const thumbnail = videoService.getThumbnailUrl(url);
+
     return videoRepository.createVideo({
       title,
       url,
       description,
       authorId: userId,
+      thumbnail,
     });
   },
 
@@ -73,11 +102,15 @@ export const videoService = {
       title: video.title,
       description: video.description,
       url: video.url,
-      thumbnail: video.thumbnail,
+      thumbnailUrl: video.thumbnail,
       views: video.views,
       createdAt: video.createdAt,
       authorId: video.authorId,
-      author: video.author,
+      user: {
+        id: video.author.id,
+        username: video.author.username,
+        avatarUrl: video.author.avatar,
+      },
       likesCount: video._count.likes,
       isLiked: currentUserId ? video.likes.length > 0 : false,
     }));
@@ -112,11 +145,15 @@ export const videoService = {
       title: video.title,
       description: video.description,
       url: video.url,
-      thumbnail: video.thumbnail,
+      thumbnailUrl: video.thumbnail,
       views: video.views,
       createdAt: video.createdAt,
       authorId: video.authorId,
-      author: video.author,
+      user: {
+        id: video.author.id,
+        username: video.author.username,
+        avatarUrl: video.author.avatar,
+      },
       likesCount: video._count.likes,
       isLiked: currentUserId ? video.likes.length > 0 : false,
     };
@@ -136,13 +173,15 @@ export const videoService = {
       await prisma.like.delete({
         where: { id: existingLike.id }
       });
-      return { message: "Like removed", isLiked: false };
+      const count = await prisma.like.count({ where: { videoId } });
+      return { message: "Like removed", isLiked: false, likesCount: count };
     } else {
       //If there is no like -> create one
       await prisma.like.create({
         data: { userId, videoId }
       });
-      return { message: "Like added", isLiked: true };
+      const count = await prisma.like.count({ where: { videoId } });
+      return { message: "Like added", isLiked: true, likesCount: count };
     }
   },
 
