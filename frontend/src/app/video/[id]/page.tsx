@@ -21,7 +21,7 @@ function formatDate(dateStr: string): string {
 
 export default function VideoPage() {
   const params = useParams();
-  const id = params.id as string;
+  const id = params?.id as string;
 
   const [video, setVideo] = useState<Video | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -193,20 +193,4 @@ export default function VideoPage() {
       </div>
     </div>
   );
-}
-
-export function VideoListCompact({ videos }: { videos: Video[] }) {
-  return (
-    <div className="flex flex-col gap-3">
-      {videos.map((video) => (
-        <div key={video.id} className="flex gap-2">
-          <img src={video.thumbnailUrl} className="w-32 h-20 object-cover rounded" alt="thumb" />
-          <div>
-            <h4 className="font-bold text-sm">{video.title}</h4>
-            <p className="text-xs text-gray-500">{video.user.username}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+}

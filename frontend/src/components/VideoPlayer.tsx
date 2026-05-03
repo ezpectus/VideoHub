@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import type ReactPlayerType from 'react-player';
+// react-player ref type — the library exposes an HTMLVideoElement ref
 import styles from './VideoPlayer.module.css';
 
 // react-player accesses `window` at import time, so we must
@@ -15,7 +15,8 @@ interface Props {
 }
 
 export default function VideoPlayer({ src, title }: Props) {
-  const playerRef = useRef<ReactPlayerType | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const playerRef = useRef<any>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const [playing, setPlaying] = useState(false);
@@ -194,6 +195,7 @@ export default function VideoPlayer({ src, title }: Props) {
             attributes: { crossOrigin: 'anonymous' },
           },
           youtube: {
+            // @ts-ignore — react-player types don't expose all YouTube playerVars
             playerVars: { showinfo: 1 },
           }
         }}

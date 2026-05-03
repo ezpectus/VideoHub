@@ -28,7 +28,7 @@ export default function VideoFeed() {
   }, [isLoading, page]);
 
   const { ref } = useInView({
-    onChange: (visible) => {
+    onChange: (visible: boolean) => {
       if (visible) {
         void loadMoreVideos();
       }
