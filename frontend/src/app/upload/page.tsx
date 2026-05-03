@@ -75,8 +75,10 @@ export default function UploadPage() {
       clearInterval(interval);
       setProgress(100);
       setTimeout(() => router.push(`/video/${data.id}`), 500);
-    } catch {
-      setError('Upload failed. Please check your file and try again.');
+    } catch (err: any) {
+      console.error('Upload error:', err?.response?.data || err?.message || err);
+      const msg = err?.response?.data?.message || 'Upload failed. Please check your file and try again.';
+      setError(msg);
       setUploading(false);
       setProgress(0);
     }

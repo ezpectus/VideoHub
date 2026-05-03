@@ -8,17 +8,6 @@ import CommentList from '@/components/CommentList';
 import CommentForm from '@/components/CommentForm';
 import styles from './video.module.css';
 
-// Mock video for demonstration
-const MOCK_VIDEO: Video = {
-  id: '1',
-  title: 'Getting Started with Next.js 14 — Full Course',
-  description: 'In this comprehensive tutorial, we cover everything you need to know about Next.js 14, including the App Router, Server Components, data fetching patterns, and deploying your application to production.\n\nTopics covered:\n• App Router and layout system\n• Server vs Client components\n• Data fetching with async/await\n• Routing and navigation\n• API Routes',
-  url: '',
-  thumbnailUrl: '',
-  views: 1_240_000,
-  createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-  user: { id: 'u1', username: 'CodeMaster', avatarUrl: '' },
-};
 
 function formatViews(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -47,8 +36,9 @@ export default function VideoPage() {
       setVideo(data);
       setLikes(data.likesCount || 0);
       setIsLiked(data.isLiked || false);
-    } catch {
-      setVideo(MOCK_VIDEO);
+    } catch (error) {
+      console.error("Failed to fetch video:", error);
+      setVideo(null);
     } finally {
       setVideoLoading(false);
     }
@@ -75,7 +65,7 @@ export default function VideoPage() {
       // silently sends data to the server
       await videoApi.toggleLike(id);
     } catch (error) {
-      console.error("Ошибка при лайке:", error);
+      console.error("Error while liking:", error);
       //in case of error
       setIsLiked(!newIsLiked);
       setLikes(likes);
@@ -105,7 +95,7 @@ export default function VideoPage() {
         // save to browser memory
         localStorage.setItem('watchHistory', JSON.stringify(historyArray));
       } catch (error) {
-        console.error("Ошибка при сохранении истории просмотров:", error);
+        console.error("Error saving watch history:", error);
       }
     }
 

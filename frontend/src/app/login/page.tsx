@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './login.module.css';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = () => {
-    window.location.href = `${BACKEND_URL}/auth/google`;
+    window.location.href = `${BACKEND_URL}/api/auth/google`;
   };
 
   return (

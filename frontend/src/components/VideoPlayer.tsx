@@ -66,7 +66,10 @@ export default function VideoPlayer({ src, title }: Props) {
   };
   const handleSeekMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
     setSeeking(false);
-    playerRef.current?.seekTo(parseFloat((e.target as HTMLInputElement).value));
+    if (playerRef.current) {
+      const newTime = parseFloat((e.target as HTMLInputElement).value) * duration;
+      playerRef.current.currentTime = newTime;
+    }
   };
 
   /* ── fullscreen ──────────────────────────────── */
@@ -82,7 +85,16 @@ export default function VideoPlayer({ src, title }: Props) {
 
   /* ── play / pause overlay click ──────────────── */
 
-  const togglePlay = () => setPlaying((p) => !p);
+  const togglePlay = () => {
+    setPlaying((p) => {
+      const next = !p;
+      if (playerRef.current) {
+        if (next) playerRef.current.play();
+        else playerRef.current.pause();
+      }
+      return next;
+    });
+  };
 
   /* ── volume ──────────────────────────────────── */
 
@@ -99,9 +111,11 @@ export default function VideoPlayer({ src, title }: Props) {
   /* ── skip ±10s ───────────────────────────────── */
 
   const skip = (secs: number) => {
-    const target = Math.min(Math.max(currentTime + secs, 0), duration);
-    playerRef.current?.seekTo(target, 'seconds');
-    setPlayed(target / duration);
+    const targetTime = Math.min(Math.max(currentTime + secs, 0), duration);
+    if (playerRef.current) {
+      playerRef.current.currentTime = targetTime;
+    }
+    if (duration > 0) setPlayed(targetTime / duration);
   };
 
   /* ── keyboard shortcuts ──────────────────────── */
@@ -133,6 +147,8 @@ export default function VideoPlayer({ src, title }: Props) {
     scheduleHide();
   };
 
+  const isYouTube = src?.includes('youtube.com') || src?.includes('youtu.be');
+
   /* ── render ──────────────────────────────────── */
 
   return (
@@ -146,52 +162,64 @@ export default function VideoPlayer({ src, title }: Props) {
       role="application"
       aria-label={title ?? 'Video player'}
     >
-      {/* Underlying react-player (native controls hidden) */}
+      {/* Underlying react-player */}
       <ReactPlayer
-        ref={(r: ReactPlayerType | null) => { playerRef.current = r; }}
+        ref={(r: any) => { playerRef.current = r; }}
         className={styles.reactPlayer}
-        url={src}
-        playing={playing}
+        src={src}
+        autoPlay={playing}
         muted={muted}
-        volume={volume}
         width="100%"
         height="100%"
-        onReady={() => setReady(true)}
+        controls={isYouTube}
+        onLoadedData={() => setReady(true)}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
-        onDuration={(d: number) => setDuration(d)}
-        onProgress={({ played: p, loaded: l }: { played: number; loaded: number }) => {
-          if (!seeking) {
-            setPlayed(p);
-            setLoaded(l);
+        onDurationChange={(e: any) => setDuration(e.target.duration)}
+        onTimeUpdate={(e: any) => {
+          if (!seeking && duration > 0) {
+            setPlayed(e.target.currentTime / duration);
+          }
+        }}
+        onProgress={(e: any) => {
+          // If buffered is available, we could calculate loaded amount here.
+          // For now, simplify or keep it to 1.
+          if (e.target.buffered?.length > 0) {
+            setLoaded(e.target.buffered.end(e.target.buffered.length - 1) / duration);
           }
         }}
         config={{
           file: {
             attributes: { crossOrigin: 'anonymous' },
           },
+          youtube: {
+            playerVars: { showinfo: 1 },
+          }
         }}
       />
 
-      {/* Big centre play button (shown when paused) */}
-      {ready && !playing && (
-        <button
-          className={styles.bigPlayBtn}
-          onClick={togglePlay}
-          aria-label="Play video"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </button>
-      )}
+      {/* Show custom controls only if NOT YouTube */}
+      {!isYouTube && (
+        <>
+          {/* Big centre play button (shown when paused) */}
+          {ready && !playing && (
+            <button
+              className={styles.bigPlayBtn}
+              onClick={togglePlay}
+              aria-label="Play video"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+          )}
 
-      {/* Click-to-play overlay */}
-      <div className={styles.clickOverlay} onClick={togglePlay} />
+          {/* Click-to-play overlay */}
+          <div className={styles.clickOverlay} onClick={togglePlay} />
 
-      {/* Custom controls bar */}
-      <div className={`${styles.controls} ${showControls ? styles.visible : ''}`}>
+          {/* Custom controls bar */}
+          <div className={`${styles.controls} ${showControls ? styles.visible : ''}`}>
         {/* Progress / seek bar */}
         <div className={styles.progressRow}>
           {/* Loaded buffer */}
@@ -287,6 +315,8 @@ export default function VideoPlayer({ src, title }: Props) {
           </button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

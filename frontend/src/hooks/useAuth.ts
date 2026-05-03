@@ -42,16 +42,7 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    // Мокуємо успішний логін
-    const data = {
-      token: 'fake-jwt-token',
-      user: {
-        id: '1',
-        username: email.split('@')[0] || 'User',
-        email,
-        createdAt: new Date().toISOString()
-      }
-    };
+    const { data } = await authApi.login(email, password);
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
@@ -60,16 +51,7 @@ export function useAuth() {
   }, []);
 
   const register = useCallback(async (username: string, email: string, password: string) => {
-    // Мокуємо успішну реєстрацію
-    const data = {
-      token: 'fake-jwt-token',
-      user: {
-        id: '1',
-        username,
-        email,
-        createdAt: new Date().toISOString()
-      }
-    };
+    const { data } = await authApi.register(username, email, password);
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
@@ -78,16 +60,7 @@ export function useAuth() {
   }, []);
 
   const loginWithGoogle = useCallback(async (credential: string) => {
-    // Мокуємо вхід через Google
-    const data = {
-      token: 'fake-jwt-token',
-      user: {
-        id: '1',
-        username: 'GoogleUser',
-        email: 'google@example.com',
-        createdAt: new Date().toISOString()
-      }
-    };
+    const { data } = await authApi.googleLogin(credential);
     localStorage.setItem('vh_token', data.token);
     localStorage.setItem('vh_user', JSON.stringify(data.user));
     setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
