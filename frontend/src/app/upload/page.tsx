@@ -6,6 +6,11 @@ import { videoApi } from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './upload.module.css';
 
+const getYoutubeEmbedUrl = (url: string) => {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : '';
+};
+
 export default function UploadPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
