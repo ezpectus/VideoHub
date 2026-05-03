@@ -7,7 +7,7 @@ class SubscribeController {
     async toggleSubscription(req: any, res: Response) {
 try {
     const { channelId } = req.params;
-    const subscriberId = req.user.id;
+    const subscriberId = req.userId;
 
      if (subscriberId === channelId) {
         return res.status(400).json({ message: "You cannot subscribe to yourself." });

@@ -7,6 +7,11 @@ export interface User {
   username: string;
   email: string;
   avatarUrl?: string;
+  bannerUrl?: string;
+  description?: string;
+  subscriberCount?: number;
+  videoCount?: number;
+  isSubscribed?: boolean;
   createdAt: string;
 }
 
@@ -105,8 +110,16 @@ export const videoApi = {
 
 export const userApi = {
   getById: (id: string) =>
-    api.get<Pick<User, 'id' | 'username' | 'avatarUrl' | 'createdAt'>>(`/users/${id}`),
+    api.get<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bannerUrl' | 'description' | 'createdAt' | 'subscriberCount' | 'videoCount' | 'isSubscribed'>>(`/users/${id}`),
 };
+
+// ─── Subscription API ────────────────────────────────────────────────────────
+
+export const subscriptionApi = {
+  toggle: (channelId: string) =>
+    api.post<{ message: string }>(`/subscriptions/${channelId}/toggle`),
+};
+
 // ─── Comment API ─────────────────────────────────────────────────────────────
 
 export const commentApi = {

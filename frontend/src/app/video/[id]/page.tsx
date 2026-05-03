@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { videoApi, commentApi, Video, Comment } from '@/services/apiClient';
 import VideoPlayer from '@/components/VideoPlayer';
 import CommentList from '@/components/CommentList';
@@ -119,14 +120,16 @@ export default function VideoPage() {
           <div className={styles.videoInfo}>
             <h1 className={styles.title}>{video.title}</h1>
             <div className={styles.metaRow}>
-              <div className={styles.channelInfo}>
-                <div className={styles.avatar}>
-                  {video.user.username?.[0]?.toUpperCase() ?? 'U'}
+              <Link href={`/user/${video.user.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className={styles.channelInfo}>
+                  <div className={styles.avatar}>
+                    {video.user.username?.[0]?.toUpperCase() ?? 'U'}
+                  </div>
+                  <div>
+                    <p className={styles.channelName}>{video.user.username}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={styles.channelName}>{video.user.username}</p>
-                </div>
-              </div>
+              </Link>
               
              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
   <div className={styles.stats}>

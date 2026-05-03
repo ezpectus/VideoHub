@@ -1,3 +1,4 @@
+"use client";
 import Link from 'next/link';
 import {
     MdHome,
@@ -13,8 +14,11 @@ import {
     MdExpandLess
 } from 'react-icons/md';
 import { SiYoutubeshorts } from 'react-icons/si';
+import { useAuth } from '@/hooks/useAuth';
 
 const Sidebar = () => {
+    const { user } = useAuth();
+
     return (
         <aside className="sidebar">
             <div className="menu-section">
@@ -29,9 +33,9 @@ const Sidebar = () => {
             </div>
 
             <div className="menu-section">
-                <Link href="/channel" className="menu-item">
+                <Link href={user ? `/user/${user.id}` : '/login'} className="menu-item">
                     <span className="menu-icon"><MdOutlineAccountCircle /></span>
-                    <span className="menu-text">Ви</span>
+                    <span className="menu-text">Мій канал</span>
                 </Link>
                 <Link href="/feed/history" className="menu-item">
                     <span className="menu-icon"><MdHistory /></span>
