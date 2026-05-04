@@ -1,3 +1,4 @@
+//Author: Oleksandr Chakun
 import { prisma } from "../config/prisma";
 
 export const commentRepository = {

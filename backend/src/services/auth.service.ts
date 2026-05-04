@@ -1,3 +1,4 @@
+//Author: Oleksandr Chakun
 import bcrypt from "bcrypt";
 import { userRepository } from "../repositories/user.repository";
 import { generateToken } from "../utils/jwt";

@@ -1,4 +1,4 @@
-// Author: Denys(Ezpectus) + Oleksandr-C-S
+// Author: Denys(Ezpectus) + Oleksandr-C-S(Oleksandr Chakun)
 import { videoRepository } from "../repositories/video.repository";
 import { prisma } from "../config/prisma";
 import path from "path";
@@ -73,8 +73,15 @@ export const videoService = {
   },
 
   
-  getVideos: async (authorId?: string, currentUserId?: string) => {
-    const whereCondition = authorId ? { authorId } : {};
+  getVideos: async (authorId?: string, currentUserId?: string, search?: string) => {
+    const whereCondition: any = {};
+    if (authorId) whereCondition.authorId = authorId;
+    if (search) {
+      whereCondition.title = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
 
     const videos = await prisma.video.findMany({
       where: whereCondition,
@@ -139,6 +146,11 @@ export const videoService = {
     if (!video) {
       throw new Error('Video not found');
     }
+
+    await prisma.video.update({
+      where: { id },
+      data: { views: { increment: 1 } },
+    });
 
     return {
       id: video.id,

@@ -60,6 +60,7 @@ export const videoController = {
   async getAll(req: AuthRequest, res: Response) { 
     try {
       const authorId = req.query.userId as string | undefined;
+      const search = req.query.search as string | undefined;
       const currentUserId = req.userId; //Take from the token (if authorized)
       
       const result = await videoService.getVideos(authorId, currentUserId);

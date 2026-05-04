@@ -1,3 +1,4 @@
+//Author: Oleksandr Chakun
 import { commentRepository } from "../repositories/comment.repository";
 
 export const commentService = {
