@@ -32,7 +32,7 @@ export const userController = {
           // Check if the current user is subscribed to this channel
           subscribers: currentUserId
             ? { where: { subscriberId: currentUserId }, select: { id: true } }
-            : false,
+            : { where: { id: '' } },
         },
       });
 
