@@ -77,33 +77,24 @@ export const videoService = {
     const whereCondition: any = {};
     if (authorId) whereCondition.authorId = authorId;
     if (search) {
-      whereCondition.title = {
-        contains: search,
-        mode: 'insensitive',
-      };
+      whereCondition.title = { contains: search, mode: 'insensitive' };
     }
-
+  
     const videos = await prisma.video.findMany({
       where: whereCondition,
       include: {
         author: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-          }
+          select: { id: true, username: true, avatar: true }
         },
-        _count: {
-          select: { likes: true } //count the number of likes
-        },
-        likes: currentUserId ? {
-          where: { userId: currentUserId } //Check if the curr user has liked it
-        } : false
+        _count: { select: { likes: true } },
+        //Include only likes from the current user
+        likes: currentUserId
+          ? { where: { userId: currentUserId }, select: { id: true }, take: 1 }
+          : false
       },
       orderBy: { createdAt: 'desc' }
     });
-
-    // Mapping res
+  
     return videos.map(video => ({
       id: video.id,
       title: video.title,
@@ -119,9 +110,10 @@ export const videoService = {
         avatarUrl: video.author.avatar,
       },
       likesCount: video._count.likes,
-      isLiked: currentUserId ? video.likes.length > 0 : false,
+      isLiked: currentUserId ? (video.likes as any[]).length > 0 : false, 
     }));
   },
+
 
   getVideoById: async (id: string, currentUserId?: string) => {
     const video = await prisma.video.findUnique({
