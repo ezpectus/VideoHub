@@ -1,42 +1,68 @@
 // Author: Denys(Ezpectus)
 // Files: prisma.ts, env.ts, auth.middleware.ts, auth.controller.ts, video.controller.ts, comment.controller.ts
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { ENV } from '../config/env';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { ENV } from "../config/env";
 
 export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1];
+type JwtPayload = {
+  userId: string;
+};
+
+export const authMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
   if (!token) {
-    return res.status(401).json({ error: 'No token' });
+    return res.status(401).json({ error: "No token" });
   }
 
   try {
-    const decoded = jwt.verify(token, ENV.JWT_SECRET) as { userId: string };
-    req.userId = decoded.userId;
+    const decoded = jwt.verify(token, ENV.JWT_SECRET);
+
+    if (
+      typeof decoded !== "object" ||
+      decoded === null ||
+      !("userId" in decoded)
+    ) {
+      return res.status(401).json({ error: "Invalid token structure" });
+    }
+
+    req.userId = (decoded as JwtPayload).userId;
     next();
   } catch {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
-/**
- * Optional auth — extracts userId from JWT if present, but does NOT block
- * unauthenticated requests. Useful for public endpoints that show
- * personalised data (e.g. "isSubscribed").
- */
-export const optionalAuthMiddleware = (req: AuthRequest, _res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1];
+export const optionalAuthMiddleware = (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
   if (token) {
     try {
-      const decoded = jwt.verify(token, ENV.JWT_SECRET) as { userId: string };
-      req.userId = decoded.userId;
+      const decoded = jwt.verify(token, ENV.JWT_SECRET);
+
+      if (
+        typeof decoded === "object" &&
+        decoded !== null &&
+        "userId" in decoded
+      ) {
+        req.userId = (decoded as JwtPayload).userId;
+      }
     } catch {
-      // token invalid — just continue as guest
+      // ignore it
     }
   }
+
   next();
 };

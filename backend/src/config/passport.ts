@@ -1,8 +1,12 @@
 // Author: Denys(Ezpectus)
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { ENV } from './env';
-import { authService } from '../services/auth.service';
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { ENV } from "./env";
+import { authService } from "../services/auth.service";
+
+if (!ENV.GOOGLE_CLIENT_ID || !ENV.GOOGLE_CLIENT_SECRET) {
+  throw new Error("Google OAuth env variables missing");
+}
 
 passport.use(
   new GoogleStrategy(
@@ -11,11 +15,12 @@ passport.use(
       clientSecret: ENV.GOOGLE_CLIENT_SECRET,
       callbackURL: ENV.GOOGLE_CALLBACK_URL,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (_, __, profile, done) => {
       try {
         const email = profile.emails?.[0]?.value;
+
         if (!email) {
-          return done(new Error('No email from Google'), undefined);
+          return done(new Error("No email from Google"));
         }
 
         const result = await authService.googleAuth(
@@ -27,7 +32,7 @@ passport.use(
 
         return done(null, result);
       } catch (error) {
-        return done(error as Error, undefined);
+        return done(error as Error);
       }
     }
   )
