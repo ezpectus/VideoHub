@@ -6,19 +6,20 @@ import { prisma } from '../config/prisma';
 export const uploadController = {
   uploadAvatar: async (req: AuthRequest, res: Response) => {
     try {
+      if (!req.userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
       if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
       }
 
       const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-      
-      // Updating the avatar in db
-      if (req.userId) {
-        await prisma.user.update({
-          where: { id: req.userId },
-          data: { avatar: avatarUrl },
-        });
-      }
+
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: { avatar: avatarUrl },
+      });
 
       return res.json({ url: avatarUrl });
     } catch (error) {
