@@ -74,47 +74,61 @@ export const videoService = {
 
   
   getVideos: async (authorId?: string, currentUserId?: string, search?: string) => {
-    const whereCondition: any = {};
-    if (authorId) whereCondition.authorId = authorId;
-    if (search) {
-      whereCondition.title = { contains: search, mode: 'insensitive' };
-    }
-  
     const videos = await prisma.video.findMany({
-      where: whereCondition,
+      where: {
+        ...(authorId ? { authorId } : {}),
+        ...(search
+          ? { title: { contains: search, mode: "insensitive" } }
+          : {}),
+      },
       include: {
         author: {
-          select: { id: true, username: true, avatar: true }
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+          },
         },
-        _count: { select: { likes: true } },
-        //Include only likes from the current user
+        _count: {
+          select: { likes: true },
+        },
         likes: currentUserId
-          ? { where: { userId: currentUserId }, select: { id: true }, take: 1 }
-          : false
+          ? {
+              where: { userId: currentUserId },
+              select: { id: true },
+            }
+          : false,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
   
-    return videos.map(video => ({
-      id: video.id,
-      title: video.title,
-      description: video.description,
-      url: video.url,
-      thumbnailUrl: video.thumbnail,
-      views: video.views,
-      createdAt: video.createdAt,
-      authorId: video.authorId,
-      user: {
-        id: video.author.id,
-        username: video.author.username,
-        avatarUrl: video.author.avatar,
-      },
-      likesCount: video._count.likes,
-      isLiked: currentUserId ? (video.likes as any[]).length > 0 : false, 
-    }));
+    return videos.map((video) => {
+      const isLiked =
+        currentUserId && Array.isArray(video.likes)
+          ? video.likes.length > 0
+          : false;
+  
+      return {
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        url: video.url,
+        thumbnailUrl: video.thumbnail,
+        views: video.views,
+        createdAt: video.createdAt,
+  
+        user: {
+          id: video.author.id,
+          username: video.author.username,
+          avatarUrl: video.author.avatar,
+        },
+  
+        likesCount: video._count.likes,
+        isLiked,
+      };
+    });
   },
-
-
+  
   getVideoById: async (id: string, currentUserId?: string) => {
     const video = await prisma.video.findUnique({
       where: { id },
@@ -130,16 +144,17 @@ export const videoService = {
           select: { likes: true },
         },
         likes: currentUserId
-          ? { where: { userId: currentUserId } }
-          : undefined,
+          ? {
+              where: { userId: currentUserId },
+              select: { id: true },
+            }
+          : false,
       },
     });
   
-    if (!video) {
-      throw new Error("Video not found");
-    }
+    if (!video) throw new Error("Video not found");
   
-    const updated = await prisma.video.update({
+    await prisma.video.update({
       where: { id },
       data: { views: { increment: 1 } },
     });
@@ -150,44 +165,53 @@ export const videoService = {
       description: video.description,
       url: video.url,
       thumbnailUrl: video.thumbnail,
-      views: updated.views, 
+      views: video.views + 1, // фикс: сразу отображаем +1
+  
       createdAt: video.createdAt,
-      authorId: video.authorId,
+  
       user: {
         id: video.author.id,
         username: video.author.username,
         avatarUrl: video.author.avatar,
       },
+  
       likesCount: video._count.likes,
-      isLiked: currentUserId ? (video.likes?.length ?? 0) > 0 : false,
+      isLiked:
+        currentUserId && Array.isArray(video.likes)
+          ? video.likes.length > 0
+          : false,
     };
   },
 
   //Toggle Like
   toggleLike: async (videoId: string, userId: string) => {
-   //check if curr user has liked this video
-    const existingLike = await prisma.like.findUnique({
+  try {
+    await prisma.like.create({
+      data: { userId, videoId }
+    });
+
+    const likesCount = await prisma.like.count({ where: { videoId } });
+
+    return {
+      isLiked: true,
+      likesCount,
+    };
+  } catch (e: any) {
+    // unique constraint 
+    await prisma.like.delete({
       where: {
         userId_videoId: { userId, videoId }
       }
     });
 
-    if (existingLike) {
-      //If there is already a like -> delete it
-      await prisma.like.delete({
-        where: { id: existingLike.id }
-      });
-      const count = await prisma.like.count({ where: { videoId } });
-      return { message: "Like removed", isLiked: false, likesCount: count };
-    } else {
-      //If there is no like -> create one
-      await prisma.like.create({
-        data: { userId, videoId }
-      });
-      const count = await prisma.like.count({ where: { videoId } });
-      return { message: "Like added", isLiked: true, likesCount: count };
-    }
-  },
+    const likesCount = await prisma.like.count({ where: { videoId } });
+
+    return {
+      isLiked: false,
+      likesCount,
+    };
+  }
+},
 
  // Dashboard — get the video of the current author only
 getMyVideos: async (userId: string) => {
