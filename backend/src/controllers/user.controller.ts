@@ -1,18 +1,16 @@
 // Author: Denys(Ezpectus)
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../config/prisma';
 
 export const userController = {
-  /**
-   * GET /api/users/:id — full channel profile
-   * Returns user info + subscriber count + video count + isSubscribed (if authenticated)
-   */
-  async getProfile(req: Request, res: Response) {
+  // GET USER CHANNEL / PROFILE
+  async getProfile(req: AuthRequest, res: Response) {
     try {
+      // profile owner id from route params
       const id = req.params.id as string;
-
-      // Extract current user ID from the extended AuthRequest
-      const currentUserId = (req as any).userId as string | undefined;
+      // current authorized user (optional)
+      const currentUserId = req.userId;
 
       const user = await prisma.user.findUnique({
         where: { id },
@@ -29,17 +27,16 @@ export const userController = {
               subscribers: true,
             },
           },
-          // Check if the current user is subscribed to this channel
           subscribers: currentUserId
             ? { where: { subscriberId: currentUserId }, select: { id: true } }
-            : { where: { id: '' } },
+            : false,
         },
       });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-
+      // return normalized response
       return res.status(200).json({
         id: user.id,
         username: user.username,
@@ -49,7 +46,9 @@ export const userController = {
         createdAt: user.createdAt,
         subscriberCount: user._count.subscribers,
         videoCount: user._count.videos,
-        isSubscribed: currentUserId ? user.subscribers.length > 0 : false,
+        isSubscribed: currentUserId && Array.isArray(user.subscribers)
+          ? user.subscribers.length > 0
+          : false,
       });
     } catch (error) {
       console.error(error);
