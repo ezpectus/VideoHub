@@ -7,7 +7,7 @@ import { prisma } from '../config/prisma';
 class SubscribeController {
   async toggleSubscription(req: AuthRequest, res: Response) {
     try {
-      const { channelId } = req.params;
+      const channelId = req.params.channelId as string;
       const subscriberId = req.userId;
 
       
