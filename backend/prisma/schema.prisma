@@ -19,6 +19,8 @@ model User {
   password  String?
   googleId  String?   @unique
   avatar    String?
+  banner    String?      
+  description String?      
   createdAt DateTime  @default(now())
   videos    Video[]
   comments  Comment[]
