@@ -81,5 +81,6 @@ model Subscription {
   channel      User     @relation("ChannelSubscribers", fields: [channelId], references: [id])
 
   @@unique([subscriberId, channelId])
-  @@index([channelId]) // Для подсчёта подписчиков канала
+  @@index([channelId])
+  @@index([subscriberId]) 
 }
