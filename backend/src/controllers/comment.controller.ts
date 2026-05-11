@@ -9,18 +9,19 @@ export const commentController = {
 
   async create(req: AuthRequest, res: Response) {
     try {
-
       const videoId = req.params.id as string;
       const text = req.body.text;
-      const userId = req.userId as string;
+      const userId = req.userId;
 
-      const result =
-        await commentService.addComment(
-          text,
-          userId,
-          videoId
-        );
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ message: "Comment text is required" });
+      }
+
+      const result = await commentService.addComment(text.trim(), userId, videoId);
       return res.status(201).json(result);
 
     } catch (error) {
@@ -30,19 +31,12 @@ export const commentController = {
 
   async getAll(req: Request, res: Response) {
     try {
-
       const videoId = req.params.id as string;
-
-      const result =
-        await commentService.getCommentsByVideo(videoId);
-
+      const result = await commentService.getCommentsByVideo(videoId);
       return res.status(200).json(result);
-
     } catch (error) {
       return res.status(500).json({ message: "Server error" });
     }
   },
 
 };
-
-
