@@ -1,5 +1,5 @@
-// Author: Denys(Ezpectus)
-// Files: prisma.ts, env.ts, auth.middleware.ts, auth.controller.ts, video.controller.ts, comment.controller.ts
+// Author: Denys(Ezpectus) (refactored safe version)
+
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env";
@@ -12,6 +12,7 @@ type JwtPayload = {
   userId: string;
 };
 
+// MAIN AUTH MIDDLEWARE
 export const authMiddleware = (
   req: AuthRequest,
   res: Response,
@@ -26,6 +27,7 @@ export const authMiddleware = (
   try {
     const decoded = jwt.verify(token, ENV.JWT_SECRET);
 
+    // strict runtime validation
     if (
       typeof decoded !== "object" ||
       decoded === null ||
@@ -41,6 +43,7 @@ export const authMiddleware = (
   }
 };
 
+
 export const optionalAuthMiddleware = (
   req: AuthRequest,
   _res: Response,
@@ -48,20 +51,20 @@ export const optionalAuthMiddleware = (
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
 
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, ENV.JWT_SECRET);
+  if (!token) return next();
 
-      if (
-        typeof decoded === "object" &&
-        decoded !== null &&
-        "userId" in decoded
-      ) {
-        req.userId = (decoded as JwtPayload).userId;
-      }
-    } catch {
-      // ignore it
+  try {
+    const decoded = jwt.verify(token, ENV.JWT_SECRET);
+
+    if (
+      typeof decoded === "object" &&
+      decoded !== null &&
+      "userId" in decoded
+    ) {
+      req.userId = (decoded as JwtPayload).userId;
     }
+  } catch {
+    // ignore invalid token 
   }
 
   next();

@@ -124,33 +124,33 @@ export const videoService = {
             id: true,
             username: true,
             avatar: true,
-          }
+          },
         },
         _count: {
-          select: { likes: true }
+          select: { likes: true },
         },
-        likes: currentUserId ? {
-          where: { userId: currentUserId }
-        } : false
-      }
+        likes: currentUserId
+          ? { where: { userId: currentUserId } }
+          : undefined,
+      },
     });
-
+  
     if (!video) {
-      throw new Error('Video not found');
+      throw new Error("Video not found");
     }
-
-    await prisma.video.update({
+  
+    const updated = await prisma.video.update({
       where: { id },
       data: { views: { increment: 1 } },
     });
-
+  
     return {
       id: video.id,
       title: video.title,
       description: video.description,
       url: video.url,
       thumbnailUrl: video.thumbnail,
-      views: video.views,
+      views: updated.views, 
       createdAt: video.createdAt,
       authorId: video.authorId,
       user: {
@@ -159,7 +159,7 @@ export const videoService = {
         avatarUrl: video.author.avatar,
       },
       likesCount: video._count.likes,
-      isLiked: currentUserId ? video.likes.length > 0 : false,
+      isLiked: currentUserId ? (video.likes?.length ?? 0) > 0 : false,
     };
   },
 
