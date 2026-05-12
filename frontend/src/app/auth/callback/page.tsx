@@ -2,28 +2,72 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+
+function apiRoot() {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+}
 
 export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const userRaw = params.get('user');
+    let cancelled = false;
 
-    if (token && userRaw) {
-      try {
-        const user = JSON.parse(decodeURIComponent(userRaw));
-        localStorage.setItem('vh_token', token);
-        localStorage.setItem('vh_user', JSON.stringify(user));
-      } catch {
-        console.error('Failed to parse user from OAuth callback');
+    async function finish() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token || cancelled) {
+        router.replace('/login?error=google_failed');
+        return;
       }
+
+      localStorage.setItem('vh_token', token);
+
+      let userRaw = params.get('user');
+      let user: unknown;
+
+      if (userRaw) {
+        try {
+          user = JSON.parse(decodeURIComponent(userRaw));
+        } catch {
+          userRaw = null;
+        }
+      }
+
+      const looksValid =
+        user &&
+        typeof user === 'object' &&
+        'id' in user &&
+        'username' in user &&
+        typeof (user as { id: unknown }).id === 'string' &&
+        typeof (user as { username: unknown }).username === 'string';
+
+      if (!looksValid && !cancelled) {
+        try {
+          const { data } = await axios.get(`${apiRoot()}/users/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          user = data;
+        } catch {
+          router.replace('/login?error=google_failed');
+          return;
+        }
+      }
+
+      if (cancelled) return;
+
+      localStorage.setItem('vh_user', JSON.stringify(user));
+      window.dispatchEvent(new Event('auth_changed'));
       router.replace('/');
-    } else {
-      // Something went wrong — send back to login with error flag
-      router.replace('/login?error=google_failed');
     }
+
+    void finish();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   return (

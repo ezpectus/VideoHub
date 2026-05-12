@@ -1,4 +1,5 @@
 // Author: Denys(Ezpectus) + Oleksandr-C-S(Oleksandr Chakun)
+import { Prisma } from "@prisma/client";
 import { videoRepository } from "../repositories/video.repository";
 import { prisma } from "../config/prisma";
 import path from "path";
@@ -183,73 +184,80 @@ export const videoService = {
     };
   },
 
-  //Toggle Like
   toggleLike: async (videoId: string, userId: string) => {
-  try {
-    await prisma.like.create({
-      data: { userId, videoId }
-    });
+    try {
+      await prisma.like.create({
+        data: { userId, videoId },
+      });
 
-    const likesCount = await prisma.like.count({ where: { videoId } });
+      const likesCount = await prisma.like.count({ where: { videoId } });
 
-    return {
-      isLiked: true,
-      likesCount,
-    };
-  } catch (e: any) {
-    // unique constraint 
-    await prisma.like.delete({
-      where: {
-        userId_videoId: { userId, videoId }
+      return {
+        isLiked: true,
+        likesCount,
+      };
+    } catch (e: unknown) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2002"
+      ) {
+        await prisma.like.delete({
+          where: {
+            userId_videoId: { userId, videoId },
+          },
+        });
+
+        const likesCount = await prisma.like.count({ where: { videoId } });
+
+        return {
+          isLiked: false,
+          likesCount,
+        };
       }
-    });
 
-    const likesCount = await prisma.like.count({ where: { videoId } });
-
-    return {
-      isLiked: false,
-      likesCount,
-    };
-  }
-},
-
- // Dashboard — get the video of the current author only
-getMyVideos: async (userId: string) => {
-  return await prisma.video.findMany({
-    where: { authorId: userId },
-    orderBy: { createdAt: 'desc' }
-  });
-},
-
-// Dashboard — update the video with a permission check
-updateVideo: async (videoId: string, userId: string, data: { title?: string, description?: string }) => {
-  const video = await prisma.video.findUnique({ where: { id: videoId } });
-  if (!video) throw new Error("Video not found");
-
-  if (video.authorId !== userId) {
-    throw new Error("Forbidden");
-  }
-
-  return await prisma.video.update({
-    where: { id: videoId },
-    data: {
-      title: data.title !== undefined ? data.title : video.title,
-      description: data.description !== undefined ? data.description : video.description
+      throw e;
     }
-  });
-},
+  },
 
-// Dashboard — remove video with permission verification
-deleteVideo: async (videoId: string, userId: string) => {
-  const video = await prisma.video.findUnique({ where: { id: videoId } });
-  if (!video) throw new Error("Video not found");
+  getMyVideos: async (userId: string) => {
+    return await prisma.video.findMany({
+      where: { authorId: userId },
+      orderBy: { createdAt: "desc" },
+    });
+  },
 
-  if (video.authorId !== userId) {
-    throw new Error("Forbidden");
-  }
+  updateVideo: async (
+    videoId: string,
+    userId: string,
+    data: { title?: string; description?: string }
+  ) => {
+    const video = await prisma.video.findUnique({ where: { id: videoId } });
+    if (!video) throw new Error("Video not found");
 
-  return await prisma.video.delete({
-    where: { id: videoId }
+    if (video.authorId !== userId) {
+      throw new Error("Forbidden");
+    }
+
+    return await prisma.video.update({
+      where: { id: videoId },
+      data: {
+        title: data.title !== undefined ? data.title : video.title,
+        description:
+          data.description !== undefined ? data.description : video.description,
+      },
+    });
+  },
+
+  deleteVideo: async (videoId: string, userId: string) => {
+    const video = await prisma.video.findUnique({ where: { id: videoId } });
+    if (!video) throw new Error("Video not found");
+
+    if (video.authorId !== userId) {
+      throw new Error("Forbidden");
+    }
+
+    return await prisma.video.delete({
+      where: { id: videoId },
     });
   },
 };

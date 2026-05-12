@@ -105,7 +105,12 @@ export const authService = {
     if (user) {
       return {
         token: generateToken({ userId: user.id }),
-        user,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          avatar: user.avatar ?? undefined,
+        },
       };
     }
 

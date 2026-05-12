@@ -59,15 +59,6 @@ export function useAuth() {
     return data;
   }, []);
 
-  const loginWithGoogle = useCallback(async (credential: string) => {
-    const { data } = await authApi.googleLogin(credential);
-    localStorage.setItem('vh_token', data.token);
-    localStorage.setItem('vh_user', JSON.stringify(data.user));
-    setState({ user: data.user, token: data.token, isLoading: false, isAuthenticated: true });
-    window.dispatchEvent(new Event('auth_changed'));
-    return data;
-  }, []);
-
   const logout = useCallback(() => {
     localStorage.removeItem('vh_token');
     localStorage.removeItem('vh_user');
@@ -75,5 +66,5 @@ export function useAuth() {
     window.dispatchEvent(new Event('auth_changed'));
   }, []);
 
-  return { ...state, login, register, loginWithGoogle, logout };
+  return { ...state, login, register, logout };
 }

@@ -12,7 +12,12 @@ import subscriptionRoutes from './routes/subscription.routes';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ENV.FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(passport.initialize());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

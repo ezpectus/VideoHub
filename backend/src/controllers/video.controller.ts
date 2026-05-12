@@ -170,6 +170,9 @@ export const videoController = {
           .status(403)
           .json({ message: "You don't have permission" });
       }
+      if (error.message === "Video not found") {
+        return res.status(404).json({ message: error.message });
+      }
       return res.status(500).json({ message: "Server error" });
     }
   },
@@ -193,6 +196,9 @@ export const videoController = {
         return res
           .status(403)
           .json({ message: "You don't have permission" });
+      }
+      if (error.message === "Video not found") {
+        return res.status(404).json({ message: error.message });
       }
       return res.status(500).json({ message: "Server error" });
     }

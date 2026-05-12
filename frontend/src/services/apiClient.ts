@@ -68,9 +68,6 @@ export const authApi = {
 
   login: (email: string, password: string) =>
     api.post<AuthResponse>('/auth/login', { email, password }),
-
-  googleLogin: (credential: string) =>
-    api.post<AuthResponse>('/auth/google', { credential }),
 };
 
 // ─── Video API ──────────────────────────────────────────────────────────────
@@ -109,6 +106,8 @@ export const videoApi = {
 // ─── User API ──────────────────────────────────────────────────────────────
 
 export const userApi = {
+  getMe: () => api.get<User>('/users/me'),
+
   getById: (id: string) =>
     api.get<Pick<User, 'id' | 'username' | 'avatarUrl' | 'bannerUrl' | 'description' | 'createdAt' | 'subscriberCount' | 'videoCount' | 'isSubscribed'>>(`/users/${id}`),
 };

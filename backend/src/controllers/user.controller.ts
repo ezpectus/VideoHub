@@ -4,6 +4,45 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../config/prisma';
 
 export const userController = {
+  async getMe(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          avatar: true,
+          banner: true,
+          description: true,
+          createdAt: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      return res.status(200).json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatarUrl: user.avatar ?? undefined,
+        bannerUrl: user.banner ?? undefined,
+        description: user.description ?? undefined,
+        createdAt: user.createdAt,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  },
+
   // GET USER CHANNEL / PROFILE
   async getProfile(req: AuthRequest, res: Response) {
     try {

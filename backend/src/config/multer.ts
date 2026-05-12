@@ -10,10 +10,10 @@ const storage = multer.diskStorage({
       cb(null, 'uploads/avatars');
     } else if (file.fieldname === 'thumbnail') {
       cb(null, 'uploads/thumbnails');
-    } else if (file.fieldname === 'video') {
+    } else if (file.fieldname === 'video' || file.fieldname === 'file') {
       cb(null, 'uploads/videos');
     } else {
-      cb(null, 'uploads');
+      cb(new Error('Unexpected upload field'), '');
     }
   },
   filename: (req, file, cb) => {
@@ -35,14 +35,14 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
     }
   }
   // Video
-  else if (file.fieldname === 'video') {
+  else if (file.fieldname === 'video' || file.fieldname === 'file') {
     if (file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
       cb(new Error('Only videos are allowed!'));
     }
   } else {
-    cb(null, true);
+    cb(new Error('Unexpected upload field'));
   }
 };
 
