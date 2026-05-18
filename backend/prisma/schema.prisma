@@ -13,47 +13,76 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String    @unique
+  username  String    @unique
+  password  String?
+  googleId  String?   @unique
   avatar    String?
-  createdAt DateTime @default(now())
+  banner    String?      
+  description String?      
+  createdAt DateTime  @default(now())
   videos    Video[]
   comments  Comment[]
   likes     Like[]
+  subscribers   Subscription[] @relation("ChannelSubscribers")
+  subscriptions Subscription[] @relation("UserSubscriptions")
+  
+  @@index([email])
+  @@index([googleId])
 }
 
 model Video {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid()) @db.Uuid
   title       String
   description String?
   url         String
   thumbnail   String?
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  authorId    String    @db.Uuid
+  author      User      @relation(fields: [authorId], references: [id])
   comments    Comment[]
   likes       Like[]
+  
+  @@index([authorId]) 
+  @@index([createdAt])
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   text      String
   createdAt DateTime @default(now())
-  userId    String
-  videoId   String
+  userId    String   @db.Uuid
+  videoId   String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id])
   video     Video    @relation(fields: [videoId], references: [id])
+  
+  @@index([userId])
+  @@index([videoId])
 }
 
 model Like {
-  id      String @id @default(uuid())
-  userId  String
-  videoId String
+  id      String @id @default(uuid()) @db.Uuid
+  userId  String @db.Uuid
+  videoId String @db.Uuid
   user    User   @relation(fields: [userId], references: [id])
   video   Video  @relation(fields: [videoId], references: [id])
 
   @@unique([userId, videoId])
+  @@index([videoId]) // Для подсчёта лайков видео
+}
+
+model Subscription {
+  id           String   @id @default(uuid()) @db.Uuid
+  subscriberId String   @db.Uuid
+  channelId    String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  subscriber   User     @relation("UserSubscriptions", fields: [subscriberId], references: [id])
+  channel      User     @relation("ChannelSubscribers", fields: [channelId], references: [id])
+
+  @@unique([subscriberId, channelId])
+  @@index([channelId])
+  @@index([subscriberId]) 
 }
