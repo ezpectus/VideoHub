@@ -42,11 +42,17 @@ export interface AuthResponse {
 
 // ─── Axios Instance ─────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Use environment variable with production fallback - no localhost fallback
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+if (!BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is required');
+}
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30 second timeout
 });
 
 // Attach JWT on every request
@@ -59,6 +65,38 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle token expiration and network errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle token expiration (401)
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Clear token and redirect to login
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vh_token');
+        window.location.href = '/login';
+      }
+      
+      return Promise.reject(error);
+    }
+
+    // Handle network errors with retry logic
+    if (!error.response && error.code === 'ECONNABORTED') {
+      // Timeout error
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        return api(originalRequest);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // ─── Auth API ───────────────────────────────────────────────────────────────
 
@@ -88,6 +126,7 @@ export const videoApi = {
   upload: (formData: FormData) =>
     api.post<Video>('/videos/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000, // 2 minute timeout for uploads
     }),
 
   uploadByUrl: (data: { title: string; url: string; description?: string }) =>

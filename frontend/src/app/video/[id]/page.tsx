@@ -31,7 +31,7 @@ export default function VideoPage() {
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
 
-  const fetchVideo = async () => {
+  const fetchVideo = async (retryCount = 0) => {
     try {
       const { data } = await videoApi.getById(id);
       setVideo(data);
@@ -39,7 +39,14 @@ export default function VideoPage() {
       setIsLiked(data.isLiked || false);
     } catch (error) {
       console.error("Failed to fetch video:", error);
-      setVideo(null);
+      
+      // Retry logic for network failures
+      if (retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+        setTimeout(() => fetchVideo(retryCount + 1), delay);
+      } else {
+        setVideo(null);
+      }
     } finally {
       setVideoLoading(false);
     }
@@ -196,4 +203,4 @@ export default function VideoPage() {
       </div>
     </div>
   );
-}
+}

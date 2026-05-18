@@ -21,7 +21,25 @@ export const commentController = {
         return res.status(400).json({ message: "Comment text is required" });
       }
 
-      const result = await commentService.addComment(text.trim(), userId, videoId);
+      // Validate comment length
+      if (text.trim().length > 5000) {
+        return res.status(400).json({ message: "Comment text is too long (max 5000 characters)" });
+      }
+
+      // Native XSS sanitization - strip HTML tags
+      const sanitizedText = text.trim()
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+
+      // Additional validation
+      if (sanitizedText.length < 1 || sanitizedText.length > 5000) {
+        return res.status(400).json({ message: "Invalid comment length" });
+      }
+
+      const result = await commentService.addComment(sanitizedText, userId, videoId);
       return res.status(201).json(result);
 
     } catch (error) {

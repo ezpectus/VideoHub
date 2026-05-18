@@ -1,14 +1,14 @@
 // script for auth via Email and Google OAuth
-// Author Jutsu78 (Oleksii) 
+// Author: Jutsu78 (Oleksii) + Denys(Ezpectus) 
 
 import { Request, Response, Router } from "express";
 import { authController } from "../controllers/auth.controller";
+import { authService } from '../services/auth.service';
 import passport from "../config/passport";
 import { ENV } from "../config/env";
 
 const router = Router();
 
-// EMAIL AUTH
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 

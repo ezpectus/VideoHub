@@ -6,6 +6,43 @@ import { authService } from "../services/auth.service";
 const isValid = (v?: string) =>
   typeof v === "string" && v.trim().length > 0;
 
+// Native email validation using regex
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Native password strength validation
+const validatePasswordStrength = (password: string): { valid: boolean; message?: string } => {
+  if (password.length < 8) {
+    return { valid: false, message: "Password must be at least 8 characters long" };
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one uppercase letter" };
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one lowercase letter" };
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one number" };
+  }
+  
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one special character" };
+  }
+  
+  return { valid: true };
+};
+
+// Native username validation
+const isValidUsername = (username: string): boolean => {
+  const usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
+  return usernameRegex.test(username);
+};
+
 export const authController = {
   async register(req: Request, res: Response) {
     try {
@@ -13,6 +50,22 @@ export const authController = {
 
       if (!isValid(email) || !isValid(password) || !isValid(username)) {
         return res.status(400).json({ message: "Missing fields" });
+      }
+
+      // Validate email format
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Validate username format
+      if (!isValidUsername(username)) {
+        return res.status(400).json({ message: "Username must be 3-30 alphanumeric characters" });
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({ message: passwordValidation.message });
       }
 
       const result = await authService.register(email, password, username);
@@ -34,6 +87,11 @@ export const authController = {
 
       if (!isValid(email) || !isValid(password)) {
         return res.status(400).json({ message: "Missing fields" });
+      }
+
+      // Validate email format
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
       }
 
       const result = await authService.login(email, password);

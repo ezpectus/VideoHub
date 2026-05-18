@@ -1,36 +1,15 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { ENV } from './config/env';
-import authRoutes from './routes/auth.routes';
-import videoRoutes from './routes/video.routes';
-import commentRoutes from './routes/comment.routes';
-import uploadRoutes from './routes/upload.routes';
-import passport from './config/passport';
-import userRoutes from './routes/user.routes';
-import subscriptionRoutes from './routes/subscription.routes';
+// Author: Denys(ezpectus)
+// Video streaming route with HTTP 206 Range Requests support
+
+import { Router, Request, Response } from 'express';
 import fs from 'fs';
+import path from 'path';
 
-const app = express();
+const router = Router();
 
-// CORS configuration for multi-environment support
-app.use(
-  cors({
-    origin: ENV.ALLOWED_ORIGINS,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(passport.initialize());
-
-// MVP-grade HTTP 206 Range Request streaming for videos
-app.get('/stream/videos/:filename', (req, res) => {
+router.get('/videos/:filename', (req: Request, res: Response) => {
   const filename = Array.isArray(req.params.filename) ? req.params.filename[0] : req.params.filename;
-  const filePath = path.join(__dirname, '../uploads/videos', filename);
+  const filePath = path.join(__dirname, '../../uploads/videos', filename);
 
   // Security: Validate filename to prevent path traversal
   if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
@@ -68,7 +47,7 @@ app.get('/stream/videos/:filename', (req, res) => {
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
       'Content-Type': 'video/mp4',
-      'Cache-Control': 'public, max-age=31536000',
+      'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
     };
 
     res.writeHead(206, head);
@@ -103,9 +82,9 @@ app.get('/stream/videos/:filename', (req, res) => {
 });
 
 // Stream for thumbnails and avatars (static files with caching)
-app.get('/stream/thumbnails/:filename', (req, res) => {
+router.get('/thumbnails/:filename', (req: Request, res: Response) => {
   const filename = Array.isArray(req.params.filename) ? req.params.filename[0] : req.params.filename;
-  const filePath = path.join(__dirname, '../uploads/thumbnails', filename);
+  const filePath = path.join(__dirname, '../../uploads/thumbnails', filename);
 
   if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
     return res.status(400).json({ message: 'Invalid filename' });
@@ -129,9 +108,9 @@ app.get('/stream/thumbnails/:filename', (req, res) => {
   file.pipe(res);
 });
 
-app.get('/stream/avatars/:filename', (req, res) => {
+router.get('/avatars/:filename', (req: Request, res: Response) => {
   const filename = Array.isArray(req.params.filename) ? req.params.filename[0] : req.params.filename;
-  const filePath = path.join(__dirname, '../uploads/avatars', filename);
+  const filePath = path.join(__dirname, '../../uploads/avatars', filename);
 
   if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
     return res.status(400).json({ message: 'Invalid filename' });
@@ -155,15 +134,4 @@ app.get('/stream/avatars/:filename', (req, res) => {
   file.pipe(res);
 });
 
-// Keep static serving for uploads directory as fallback
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/videos', videoRoutes);
-app.use('/api', commentRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionRoutes);
-
-export default app;
+export default router;
